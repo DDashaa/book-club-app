@@ -1,116 +1,144 @@
 "use client";
 
-import React from "react";
+import { useEffect, useState } from "react";
 
-export default function AdminPage() {
-  // Простой пароль для доступа к админке
-  const PASSWORD = "bookclub123";
+export default function Admin() {
+  const [events, setEvents] = useState([]);
+  const [title, setTitle] = useState("");
+  const [date, setDate] = useState("");
+  const [time, setTime] = useState("");
+  const [location, setLocation] = useState("");
+  const [organizer, setOrganizer] = useState("");
+  const [seats, setSeats] = useState(0);
+  const [type, setType] = useState("announcement");
 
-  const [authorized, setAuthorized] = React.useState(false);
-
-  React.useEffect(() => {
-    const userInput = prompt("Введите пароль для доступа к админке:");
-    if (userInput === PASSWORD) {
-      setAuthorized(true);
-    } else {
-      alert("Неверный пароль! Доступ запрещён.");
-    }
+  // Загружаем существующие события
+  useEffect(() => {
+    const saved = localStorage.getItem("events");
+    if (saved) setEvents(JSON.parse(saved));
   }, []);
 
-  const [meeting, setMeeting] = React.useState(() => {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("nextMeeting");
-      return saved
-        ? JSON.parse(saved)
-        : {
-            date: "25 марта",
-            theme: "Мистический реализм",
-            book: "Сто лет одиночества",
-            place: "Дом Planka, ул. 8 Марта, 20А",
-          };
-    }
-    return {
-      date: "25 марта",
-      theme: "Мистический реализм",
-      book: "Сто лет одиночества",
-      place: "Дом Planka, ул. 8 Марта, 20А",
+  // Сохраняем события
+  const saveEvents = (newEvents) => {
+    setEvents(newEvents);
+    localStorage.setItem("events", JSON.stringify(newEvents));
+  };
+
+  // Добавить событие
+  const addEvent = () => {
+    if (!title) return alert("Введите название события");
+    const newEvent = {
+      id: Date.now(),
+      title,
+      date,
+      time,
+      location,
+      organizer,
+      seats: Number(seats),
+      type,
     };
-  });
+    // Добавляем сверху списка
+    saveEvents([newEvent, ...events]);
 
-  const handleChange = (e) => {
-    setMeeting({ ...meeting, [e.target.name]: e.target.value });
+    // Очистка формы
+    setTitle("");
+    setDate("");
+    setTime("");
+    setLocation("");
+    setOrganizer("");
+    setSeats(0);
+    setType("announcement");
   };
-
-  const handleSave = () => {
-    localStorage.setItem("nextMeeting", JSON.stringify(meeting));
-    alert("Данные встречи обновлены!");
-  };
-
-  if (!authorized) {
-    return (
-      <div className="flex min-h-screen items-center justify-center text-xl font-semibold text-red-600 dark:text-red-400">
-        ❌ Доступ запрещён
-      </div>
-    );
-  }
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-start bg-zinc-50 p-6 font-sans dark:bg-gray-900">
-      <h1 className="text-4xl font-bold mb-6 text-black dark:text-white text-center">
-        🛠 Admin Panel — Редактирование встречи
-      </h1>
+    <main className="min-h-screen bg-white px-4 py-6 pb-24">
+      <h1 className="text-2xl font-bold text-[#1A1A1B] mb-4">Admin Panel</h1>
 
-      <div className="w-full max-w-md bg-white dark:bg-gray-800 shadow-md rounded-lg p-6 space-y-4">
-        <div>
-          <label className="block mb-1 text-gray-700 dark:text-gray-300">Дата</label>
-          <input
-            type="text"
-            name="date"
-            value={meeting.date}
-            onChange={handleChange}
-            className="w-full rounded border border-gray-300 px-3 py-2 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-          />
-        </div>
-
-        <div>
-          <label className="block mb-1 text-gray-700 dark:text-gray-300">Тема месяца</label>
-          <input
-            type="text"
-            name="theme"
-            value={meeting.theme}
-            onChange={handleChange}
-            className="w-full rounded border border-gray-300 px-3 py-2 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-          />
-        </div>
-
-        <div>
-          <label className="block mb-1 text-gray-700 dark:text-gray-300">Книга</label>
-          <input
-            type="text"
-            name="book"
-            value={meeting.book}
-            onChange={handleChange}
-            className="w-full rounded border border-gray-300 px-3 py-2 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-          />
-        </div>
-
-        <div>
-          <label className="block mb-1 text-gray-700 dark:text-gray-300">Место</label>
-          <input
-            type="text"
-            name="place"
-            value={meeting.place}
-            onChange={handleChange}
-            className="w-full rounded border border-gray-300 px-3 py-2 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-          />
-        </div>
+      {/* Форма добавления события */}
+      <div className="flex flex-col gap-3 mb-6">
+        <input
+          type="text"
+          placeholder="Название"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          className="border border-gray-300 px-3 py-2 rounded text-[#1A1A1B]"
+        />
+        <input
+          type="text"
+          placeholder="Дата"
+          value={date}
+          onChange={(e) => setDate(e.target.value)}
+          className="border border-gray-300 px-3 py-2 rounded text-[#1A1A1B]"
+        />
+        <input
+          type="text"
+          placeholder="Время"
+          value={time}
+          onChange={(e) => setTime(e.target.value)}
+          className="border border-gray-300 px-3 py-2 rounded text-[#1A1A1B]"
+        />
+        <input
+          type="text"
+          placeholder="Место"
+          value={location}
+          onChange={(e) => setLocation(e.target.value)}
+          className="border border-gray-300 px-3 py-2 rounded text-[#1A1A1B]"
+        />
+        <input
+          type="text"
+          placeholder="Организатор"
+          value={organizer}
+          onChange={(e) => setOrganizer(e.target.value)}
+          className="border border-gray-300 px-3 py-2 rounded text-[#1A1A1B]"
+        />
+        <input
+          type="number"
+          placeholder="Количество мест"
+          value={seats}
+          onChange={(e) => setSeats(e.target.value)}
+          className="border border-gray-300 px-3 py-2 rounded text-[#1A1A1B]"
+        />
+        <select
+          value={type}
+          onChange={(e) => setType(e.target.value)}
+          className="border border-gray-300 px-3 py-2 rounded text-[#1A1A1B]"
+        >
+          <option value="announcement">Announcement</option>
+          <option value="archive">Archive</option>
+        </select>
 
         <button
-          onClick={handleSave}
-          className="w-full bg-blue-600 text-white font-semibold py-2 rounded hover:bg-blue-700 transition"
+          onClick={addEvent}
+          className="bg-gradient-to-r from-green-400 to-yellow-400 text-[#1A1A1B] font-bold px-4 py-2 rounded mt-2"
         >
-          💾 Сохранить
+          Добавить событие
         </button>
+      </div>
+
+      {/* Список событий */}
+      <h2 className="text-xl font-bold text-[#1A1A1B] mb-2">События</h2>
+      <div className="flex flex-col gap-4">
+        {events.map((event) => (
+          <div
+            key={event.id}
+            className="bg-white rounded-[20px] shadow-sm overflow-hidden border border-gray-200"
+          >
+            <div className="w-full aspect-video bg-gray-200" />
+            <div className="p-4">
+              <h3 className="text-[18px] font-bold text-[#1A1A1B] mb-1">{event.title}</h3>
+              <div className="text-[14px] text-[#5D5FEF] mb-1">
+                📅 {event.date} • {event.time}
+              </div>
+              <div className="text-[14px] text-[#757575] mb-1">
+                {event.location} • {event.organizer}
+              </div>
+              <div className="text-[#5FCDFD] font-bold">
+                {event.seats > 0 ? `${event.seats} мест` : "Sold out"}
+              </div>
+              <div className="mt-1 text-[12px] text-gray-500">{event.type}</div>
+            </div>
+          </div>
+        ))}
       </div>
     </main>
   );
